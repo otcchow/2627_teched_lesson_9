@@ -78,7 +78,7 @@
                     <h1 class="text-2xl md:text-3xl font-black font-fun tracking-wide">JC GoAI 系統提示詞產生器</h1>
                 </div>
             </div>
-            <a href="https://playground.raise.mit.edu/goai/?project=https://www.dropbox.com/scl/fi/i89yces675rvuoqo7na6f/Teacher-Chow.sb3?rlkey=2gnkmx1egh1twc4vcpntr9osw&dl=0" 
+            <a href="https://playground.raise.mit.edu/goai/?project=https://www.dropbox.com/scl/fi/a8dtserk9u882d2ksvbsc/Chatty-the-Chatbot.sb3?rlkey=1h67tbz8nbs39pv390aswqh86&st=wr1qubw5&dl=0" 
                target="_blank" 
                class="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold px-4 py-2.5 rounded-xl shadow-md transition flex items-center gap-2 text-sm md:text-base active:scale-95">
                <i class="fa-solid fa-external-link"></i> 前往 GOAI Playground
@@ -253,7 +253,7 @@
                         class="w-full sm:w-1/2 bg-gray-300 text-gray-500 font-black py-3.5 px-6 rounded-2xl shadow-sm transition flex items-center justify-center gap-2 cursor-not-allowed text-base active:scale-95">
                     <i class="fa-solid fa-copy"></i> 一鍵複製英文 Prompt
                 </button>
-                <a id="btn-goai" href="https://playground.raise.mit.edu/goai/?project=https://www.dropbox.com/scl/fi/i89yces675rvuoqo7na6f/Teacher-Chow.sb3?rlkey=2gnkmx1egh1twc4vcpntr9osw&dl=0" 
+                <a id="btn-goai" href="https://playground.raise.mit.edu/goai/?project=https://www.dropbox.com/scl/fi/a8dtserk9u882d2ksvbsc/Chatty-the-Chatbot.sb3?rlkey=1h67tbz8nbs39pv390aswqh86&st=wr1qubw5&dl=0" 
                    target="_blank" 
                    class="w-full sm:w-1/2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-black py-3.5 px-6 rounded-2xl shadow-md transition flex items-center justify-center gap-2 text-center text-base active:scale-95">
                     <i class="fa-solid fa-paper-plane"></i> 去 GOAI 貼上測試！
@@ -710,14 +710,73 @@
                 `;
                 container.appendChild(card);
             });
+
+            // If in Custom Mode, append a custom blank input field underneath the 3 templates
+            if (activeMode === 'custom') {
+                const customBox = document.createElement('div');
+                customBox.className = `col-span-full mt-2 bg-white/80 p-3 rounded-2xl border-2 ${borderColor}`;
+                
+                const currentCustomVal = currentSelection[`${paramKey}_custom_en`] || '';
+                
+                // Map paramKey to label title & step-specific placeholders
+                const fieldConfig = {
+                    'goalIndex': { label: 'Goal', placeholder: 'e.g. teach kids how to solve riddles' },
+                    'toneIndex': { label: 'Tone', placeholder: 'e.g. energetic, super cool and fun' },
+                    'styleIndex': { label: 'Style', placeholder: 'e.g. speak like a futuristic robot' },
+                    'dosIndex': { label: 'Do', placeholder: 'e.g. ask a riddle before each answer' },
+                    'dontsIndex': { label: "Don't", placeholder: 'e.g. never speak in a rude voice' }
+                };
+                const config = fieldConfig[paramKey] || { label: '', placeholder: 'e.g. type in English' };
+                
+                customBox.innerHTML = `
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <i class="fa-solid fa-pen text-xs ${activeTextColor}"></i>
+                        <span class="text-xs font-bold ${activeTextColor}">The ${config.label} of your own chatbot</span>
+                    </div>
+                    <input type="text" value="${currentCustomVal}" 
+                           oninput="onCustomParamInput('${secId}', '${paramKey}', this.value, '${activeBg}')"
+                           placeholder="${config.placeholder}" 
+                           class="w-full p-2.5 rounded-xl border border-gray-300 font-mono text-xs text-gray-800 font-bold focus:outline-none focus:border-indigo-500 bg-white">
+                `;
+                container.appendChild(customBox);
+            }
+        }
+
+        function onCustomParamInput(secId, paramKey, value, activeBg) {
+            const trimmed = value.trim();
+            if (trimmed) {
+                currentSelection[paramKey] = 'custom';
+                currentSelection[`${paramKey}_custom_en`] = trimmed;
+                currentSelection[`${paramKey}_custom_cn`] = trimmed;
+
+                // Deselect option cards in this section
+                const container = document.getElementById(secId);
+                const cards = container.querySelectorAll('.option-card');
+                cards.forEach(card => {
+                    card.classList.remove('selected', activeBg);
+                    const icon = card.querySelector('i');
+                    if (icon) icon.classList.add('text-gray-400');
+                });
+            } else {
+                currentSelection[paramKey] = null;
+                currentSelection[`${paramKey}_custom_en`] = '';
+                currentSelection[`${paramKey}_custom_cn`] = '';
+            }
+            updateStateAndCheck();
         }
 
         // Option Selection Handler
         function selectParamOption(secId, paramKey, index, activeBg, borderColor) {
             currentSelection[paramKey] = index;
+            // Clear custom input if card chosen
+            currentSelection[`${paramKey}_custom_en`] = '';
+            currentSelection[`${paramKey}_custom_cn`] = '';
+
             const container = document.getElementById(secId);
+            const customInput = container.querySelector('input[type="text"]');
+            if (customInput) customInput.value = '';
+
             const cards = container.querySelectorAll('.option-card');
-            
             cards.forEach((card, i) => {
                 const icon = card.querySelector('i');
                 if (i === index) {
@@ -835,6 +894,16 @@
             let roleCn = '', roleEn = '';
             let goal, tone, style, doItem, dontItem;
 
+            const getItem = (paramKey, optionsList) => {
+                if (currentSelection[paramKey] === 'custom') {
+                    return {
+                        cn: currentSelection[`${paramKey}_custom_cn`],
+                        en: currentSelection[`${paramKey}_custom_en`]
+                    };
+                }
+                return optionsList[currentSelection[paramKey]];
+            };
+
             if (activeMode === 'preset') {
                 const role = rolesData.find(r => r.id === currentSelection.roleId);
                 roleCn = role.name;
@@ -847,11 +916,11 @@
             } else {
                 roleEn = document.getElementById('custom-role-en').value.trim();
                 roleCn = roleEn; // Fallback to English name for display
-                goal = universalOptions.goals[currentSelection.goalIndex];
-                tone = universalOptions.tones[currentSelection.toneIndex];
-                style = universalOptions.styles[currentSelection.styleIndex];
-                doItem = universalOptions.dos[currentSelection.dosIndex];
-                dontItem = universalOptions.donts[currentSelection.dontsIndex];
+                goal = getItem('goalIndex', universalOptions.goals);
+                tone = getItem('toneIndex', universalOptions.tones);
+                style = getItem('styleIndex', universalOptions.styles);
+                doItem = getItem('dosIndex', universalOptions.dos);
+                dontItem = getItem('dontsIndex', universalOptions.donts);
             }
 
             // Chinese Prompt Preview
