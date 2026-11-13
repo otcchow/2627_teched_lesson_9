@@ -222,6 +222,35 @@
                                       class="w-full bg-transparent text-sky-400 font-mono text-xs focus:outline-none resize-none leading-relaxed"></textarea>
                         </div>
                     </div>
+
+                    <!-- Live Simulation Chat Box ("1+1=?") -->
+                    <div class="mt-4 bg-sky-50/80 rounded-2xl p-4 border border-sky-200/80">
+                        <div class="flex items-center justify-between mb-2.5">
+                            <span class="text-xs font-black text-sky-900 flex items-center gap-1.5">
+                                <i class="fa-solid fa-robot text-sky-600"></i> 效果模擬：如果問佢「1+1=?」
+                            </span>
+                            <span class="text-[10px] font-bold bg-white text-sky-600 px-2 py-0.5 rounded-full border border-sky-200 shadow-2xs">
+                                隨步驟即時變化
+                            </span>
+                        </div>
+                        <div class="space-y-2.5 text-xs">
+                            <!-- User Bubble -->
+                            <div class="flex justify-end">
+                                <div class="bg-sky-600 text-white font-bold px-3 py-1.5 rounded-2xl rounded-tr-sm shadow-2xs">
+                                    1+1=?
+                                </div>
+                            </div>
+                            <!-- Bot Simulated Bubble -->
+                            <div class="flex items-start gap-2">
+                                <div id="sim-bot-avatar" class="w-7 h-7 rounded-full bg-white border border-sky-200 flex items-center justify-center text-sm shrink-0 shadow-2xs">
+                                    🤖
+                                </div>
+                                <div id="sim-bot-reply" class="bg-white text-slate-700 font-bold px-3.5 py-2.5 rounded-2xl rounded-tl-sm border border-sky-100 shadow-2xs leading-relaxed">
+                                    （請先在左邊選擇角色，看看它會怎麼回答你！）
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Right Bottom Actions (Orange highlight button) -->
@@ -547,6 +576,9 @@
             document.getElementById('pv-do').innerHTML = `✅ 必須做到：<span class="text-slate-200">${getStepText(5, 'do')}</span>`;
             document.getElementById('pv-dont').innerHTML = `🛡️ 絕對不要：<span class="text-slate-200">${getStepText(6, 'dont')}</span>`;
 
+            // Update Live Simulation ("1+1=?")
+            updateSimulationBox();
+
             // Check if ready for EN prompt
             let count = 0;
             if (selections.role) count++;
@@ -586,6 +618,112 @@
             }
         }
 
+        function updateSimulationBox() {
+            const avatarEl = document.getElementById('sim-bot-avatar');
+            const replyEl = document.getElementById('sim-bot-reply');
+            if (!avatarEl || !replyEl) return;
+
+            if (!selections.role) {
+                avatarEl.innerText = '🤖';
+                replyEl.innerHTML = '<span class="text-slate-400">（請先在左邊選擇第 1 步「角色」，看看它會怎麼回答 1+1=?）</span>';
+                return;
+            }
+
+            // 1. Role Persona & Icon
+            const rolePersonas = {
+                teacher: { icon: '📚', intro: '同學你好！', item: '支鉛筆' },
+                storyteller: { icon: '📖', intro: '從前從前，', item: '隻小精靈' },
+                detective: { icon: '🔬', intro: '根據線索觀察，', item: '個放大鏡' },
+                english_coach: { icon: '🗣️', intro: 'Great question! ', item: 'apples' },
+                math_buddy: { icon: '🧩', intro: '我們一起來拆解！', item: '塊積木' },
+                trip_planner: { icon: '🧭', intro: '出發去旅行囉！', item: '張機票' },
+                chef: { icon: '🍳', intro: '歡迎來到小廚房！', item: '顆雞蛋' },
+                earth_guardian: { icon: '🌱', intro: '為了愛護地球，', item: '棵小樹苗' },
+                explorer: { icon: '🚀', intro: '收到訊號，Over！', item: '顆星星' },
+                custom: { icon: '✨', intro: `身為 ${selections.customRoleEn || '你的專屬夥伴'}，`, item: '個寶物' }
+            };
+            const p = rolePersonas[selections.role] || rolePersonas.custom;
+            avatarEl.innerText = p.icon;
+
+            // Check key flags from steps 2-6
+            const noDirectAnswer = (selections.dont === 0); // 絕對不可直接給作業答案
+            const makeUpFacts = (selections.dont === 1); // 絕對不可亂猜胡說
+            const politeRule = (selections.dont === 2); // 絕對不可使用粗魯字眼
+
+            let replyParts = [];
+
+            // Step 3: Tone opening
+            if (selections.tone === 0) {
+                replyParts.push(`哇！好開心你問我！✨ ${p.intro}`);
+            } else if (selections.tone === 1) {
+                replyParts.push(`請專心聽好。${p.intro}`);
+            } else if (selections.tone === 2) {
+                replyParts.push(`哈哈！這題難不倒我！🤪 ${p.intro}`);
+            } else if (selections.tone === 'custom') {
+                replyParts.push(`[${selections.customEn.tone}] ${p.intro}`);
+            } else {
+                replyParts.push(p.intro);
+            }
+
+            // Step 2: Goal flavor (Now properly included!)
+            if (selections.goal === 0) {
+                replyParts.push(`我們一起開開心心來看看這題吧！😊`);
+            } else if (selections.goal === 1) {
+                replyParts.push(`你知道嗎？在數學世界裡，1 加 1 其實藏著超有趣的秘密喔！🔍`);
+            } else if (selections.goal === 2) {
+                replyParts.push(`你踏出提問的第一步已經超棒了，你一定可以做到的！🌟`);
+            } else if (selections.goal === 'custom') {
+                replyParts.push(`（目標：${selections.customEn.goal}）`);
+            }
+
+            // Step 4 (Style) + Step 6 (Don't) core answer
+            if (noDirectAnswer) {
+                // Don't give direct answer! Guide instead!
+                if (selections.style === 1) {
+                    replyParts.push(`在故事裡，主角左手拿了 1 ${p.item}，右手又撿到 1 ${p.item}，合起來總共有幾多個呢？（我唔可以直接講答案㗎，你估下！😉）`);
+                } else if (selections.style === 2) {
+                    replyParts.push(`<br>1️⃣ 先伸出 1 隻手指<br>2️⃣ 再伸出 1 隻手指<br>3️⃣ 數數看一共有幾隻？（守則規定唔可以直接比答案你，自己數下啦！💡）`);
+                } else {
+                    replyParts.push(`我唔可以直接比答案你㗎！試下想像你有 1 ${p.item}，我再送你 1 ${p.item}，現在你有幾多個？🤔`);
+                }
+            } else {
+                // Direct answer allowed (before Step 6 block is chosen)
+                if (selections.style === 1) {
+                    replyParts.push(`話說有 1 ${p.item} 遇見了另 1 ${p.item}，牠們手牽手變成好朋友，所以答案就係 <span class="text-orange-600 font-black">2</span> 啦！`);
+                } else if (selections.style === 2) {
+                    replyParts.push(`<br>1️⃣ 1 個加 1 個<br>2️⃣ 合起來數量變多<br>3️⃣ 答案就係 <span class="text-orange-600 font-black">2</span>！`);
+                } else if (selections.style === 0) {
+                    replyParts.push(`好簡單！就好似 1 ${p.item} 加 1 ${p.item}，答案就係 <span class="text-orange-600 font-black">2</span>！`);
+                } else if (selections.style === 'custom') {
+                    replyParts.push(`（${selections.customEn.style}）1 + 1 的答案就係 <span class="text-orange-600 font-black">2</span>！`);
+                } else {
+                    replyParts.push(`1 + 1 的答案係 <span class="text-orange-600 font-black">2</span>。`);
+                }
+            }
+
+            // Step 5: Do (Good Habits)
+            if (selections.do === 0) {
+                replyParts.push(`你肯主動發問真係好叻，繼續加油！👍`);
+            } else if (selections.do === 1) {
+                replyParts.push(`考考你：咁 2 + 1 又等於幾多呢？❓`);
+            } else if (selections.do === 2) {
+                replyParts.push(`（呢題我百分百確定無計錯！🤔）`);
+            } else if (selections.do === 'custom') {
+                replyParts.push(`✨（${selections.customEn.do}）`);
+            }
+
+            // Extra badge note if Step 6 other options chosen
+            if (makeUpFacts) {
+                replyParts.push(`<span class="block text-[11px] text-emerald-600 mt-1">🛡️ 已開啟防胡說保護：保證數學事實 100% 準確！</span>`);
+            } else if (politeRule) {
+                replyParts.push(`<span class="block text-[11px] text-emerald-600 mt-1">🛡️ 已開啟禮貌保護：全程使用友善文明字眼！</span>`);
+            } else if (selections.dont === 'custom') {
+                replyParts.push(`<span class="block text-[11px] text-emerald-600 mt-1">🛡️ 已遵守你的自訂守則：${selections.customEn.dont}</span>`);
+            }
+
+            replyEl.innerHTML = replyParts.join(' ');
+        }
+
         async function copySystemPrompt() {
             const textarea = document.getElementById('en-prompt-text');
             const textToCopy = textarea.value;
@@ -611,7 +749,7 @@
             }
 
             if (isSuccess) {
-                showToast('🎉 已成功複製英文 Prompt！去 RAISE Playground 貼上吧！');
+                showToast('🎉 已成功複製英文 Prompt！去 Scratch 貼上吧！');
             } else {
                 showToast('請長按文字框手動選取並複製。');
             }
