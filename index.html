@@ -295,17 +295,13 @@
             6: { title: '🛡️ 第 6 步｜安全界線 (Don\'t)', desc: 'AI 絕對不可以超越的安全防線與倫理底線。', key: 'dont' }
         };
 
-        // Exactly 10 role options: Game Designer removed, Custom Role as #10 option
+        // 5 + 1 Role Options: High contrast personas to show how Role changes AI responses!
         const rolesList = [
-            { id: 'teacher', name: '學習小導師', desc: '陪你拆解難題、一步步學習', icon: '📚', roleEn: 'a study tutor' },
-            { id: 'storyteller', name: '故事創作家', desc: '將想像力變成精彩故事', icon: '📖', roleEn: 'a story writer' },
-            { id: 'detective', name: '科學偵探', desc: '用觀察和提問探索科學', icon: '🔬', roleEn: 'a science detective' },
-            { id: 'english_coach', name: '英文教練', desc: '練習英文對話、字詞和表達', icon: '🗣️', roleEn: 'an English coach' },
-            { id: 'math_buddy', name: '數學解難拍檔', desc: '拆步驟、找方法、建立信心', icon: '🧩', roleEn: 'a math tutor' },
-            { id: 'trip_planner', name: '小小旅行規劃師', desc: '安排行程、預算和文化探索', icon: '🧭', roleEn: 'a travel guide' },
-            { id: 'chef', name: '創意小廚師', desc: '發明食譜，學習食材與烹調', icon: '🍳', roleEn: 'a cooking assistant' },
-            { id: 'earth_guardian', name: '地球守護隊長', desc: '把環保知識變成日常行動', icon: '🌱', roleEn: 'an eco helper' },
-            { id: 'explorer', name: '太空探險家', desc: '探索行星、宇宙和太空任務', icon: '🚀', roleEn: 'a space guide' },
+            { id: 'mathematician', name: '嚴謹數學家', desc: '用超深奧、專業的數學理論解釋一切', icon: '🧮', roleEn: 'a strict university mathematician' },
+            { id: 'mom', name: '溫柔媽媽', desc: '語氣好 Nice，用日常生活比喻講到你明', icon: '👩‍👧', roleEn: 'a kind and gentle mother' },
+            { id: 'teacher', name: '細心老師', desc: '講解超級詳細，希望你真正學到知識', icon: '👩‍🏫', roleEn: 'a thorough and patient school teacher' },
+            { id: 'toddler', name: '三歲幼稚園小朋友', desc: '用最天真可愛、掰手指頭的童言童語回答', icon: '👶', roleEn: 'a cute 3-year-old kindergarten kid' },
+            { id: 'pirate', name: '熱血海賊船長', desc: '把所有問題都當成海上尋寶冒險一樣誇張', icon: '🏴‍☠️', roleEn: 'an adventurous pirate captain' },
             { id: 'custom', name: '自己發明角色', desc: '由你創作一個獨一無二的 AI', icon: '✨', roleEn: '' }
         ];
 
@@ -631,16 +627,42 @@
 
             // 1. Role Persona & Icon
             const rolePersonas = {
-                teacher: { icon: '📚', intro: '同學你好！', item: '支鉛筆' },
-                storyteller: { icon: '📖', intro: '從前從前，', item: '隻小精靈' },
-                detective: { icon: '🔬', intro: '根據線索觀察，', item: '個放大鏡' },
-                english_coach: { icon: '🗣️', intro: 'Great question! ', item: 'apples' },
-                math_buddy: { icon: '🧩', intro: '我們一起來拆解！', item: '塊積木' },
-                trip_planner: { icon: '🧭', intro: '出發去旅行囉！', item: '張機票' },
-                chef: { icon: '🍳', intro: '歡迎來到小廚房！', item: '顆雞蛋' },
-                earth_guardian: { icon: '🌱', intro: '為了愛護地球，', item: '棵小樹苗' },
-                explorer: { icon: '🚀', intro: '收到訊號，Over！', item: '顆星星' },
-                custom: { icon: '✨', intro: `身為 ${selections.customRoleEn || '你的專屬夥伴'}，`, item: '個寶物' }
+                mathematician: {
+                    icon: '🧮',
+                    intro: '根據皮亞諾公理 (Peano Axioms) 與自然數集合論的後繼函數定義，',
+                    item: '個抽象集合元素',
+                    deepAnswer: '在十進制算術體系中，1 的後繼數嚴格收斂於 <span class="text-orange-600 font-black">2</span>（即 S(1)=2）。'
+                },
+                mom: {
+                    icon: '👩‍👧',
+                    intro: '乖寶貝，呢題好簡單啫！媽咪舉個例你就明啦：',
+                    item: '粒香甜士多啤梨',
+                    deepAnswer: '媽咪左手俾你 1 粒士多啤梨，右手再俾多你 1 粒，你加埋係咪有 <span class="text-orange-600 font-black">2</span> 粒呀？好叻仔！❤️'
+                },
+                teacher: {
+                    icon: '👩‍🏫',
+                    intro: '同學問得非常好！老師詳細為你拆解「加法」的概念：',
+                    item: '支鉛筆',
+                    deepAnswer: '首先「1」代表單一數量，「+」代表把兩組數量合併在一起，所以 1 加 1 總共等於 <span class="text-orange-600 font-black">2</span>。掌握了這個原理，以後遇到 2+2 也能輕鬆計算囉！'
+                },
+                toddler: {
+                    icon: '👶',
+                    intro: '唔... 俾我伸出手指頭數下先！一隻、兩隻...',
+                    item: '粒糖果',
+                    deepAnswer: '我知道啦！係 <span class="text-orange-600 font-black">2</span> 呀！我有兩隻手指公，耶！✌️'
+                },
+                pirate: {
+                    icon: '🏴‍☠️',
+                    intro: '哈哈哈哈！水手們聽好了！',
+                    item: '箱黃金寶藏',
+                    deepAnswer: '我們昨天搶到 1 箱寶藏，今天又挖到 1 箱寶藏，加起來足足有 <span class="text-orange-600 font-black">2</span> 大箱寶藏啦！揚帆起航！⚓'
+                },
+                custom: {
+                    icon: '✨',
+                    intro: `身為 ${selections.customRoleEn || '你的專屬夥伴'}，`,
+                    item: '個寶物',
+                    deepAnswer: '1 + 1 的答案係 <span class="text-orange-600 font-black">2</span>。'
+                }
             };
             const p = rolePersonas[selections.role] || rolePersonas.custom;
             avatarEl.innerText = p.icon;
@@ -665,7 +687,7 @@
                 replyParts.push(p.intro);
             }
 
-            // Step 2: Goal flavor (Now properly included!)
+            // Step 2: Goal flavor
             if (selections.goal === 0) {
                 replyParts.push(`我們一起開開心心來看看這題吧！😊`);
             } else if (selections.goal === 1) {
@@ -679,7 +701,9 @@
             // Step 4 (Style) + Step 6 (Don't) core answer
             if (noDirectAnswer) {
                 // Don't give direct answer! Guide instead!
-                if (selections.style === 1) {
+                if (selections.role === 'mathematician') {
+                    replyParts.push(`根據規則，我不能直接公布集合運算的最終數值！請你自行推導自然數 1 的後繼元素是什麼？（提示：比 1 多 1 個單位 💡）`);
+                } else if (selections.style === 1) {
                     replyParts.push(`在故事裡，主角左手拿了 1 ${p.item}，右手又撿到 1 ${p.item}，合起來總共有幾多個呢？（我唔可以直接講答案㗎，你估下！😉）`);
                 } else if (selections.style === 2) {
                     replyParts.push(`<br>1️⃣ 先伸出 1 隻手指<br>2️⃣ 再伸出 1 隻手指<br>3️⃣ 數數看一共有幾隻？（守則規定唔可以直接比答案你，自己數下啦！💡）`);
@@ -687,7 +711,7 @@
                     replyParts.push(`我唔可以直接比答案你㗎！試下想像你有 1 ${p.item}，我再送你 1 ${p.item}，現在你有幾多個？🤔`);
                 }
             } else {
-                // Direct answer allowed (before Step 6 block is chosen)
+                // Direct answer allowed (shows strong role contrast!)
                 if (selections.style === 1) {
                     replyParts.push(`話說有 1 ${p.item} 遇見了另 1 ${p.item}，牠們手牽手變成好朋友，所以答案就係 <span class="text-orange-600 font-black">2</span> 啦！`);
                 } else if (selections.style === 2) {
@@ -697,7 +721,7 @@
                 } else if (selections.style === 'custom') {
                     replyParts.push(`（${selections.customEn.style}）1 + 1 的答案就係 <span class="text-orange-600 font-black">2</span>！`);
                 } else {
-                    replyParts.push(`1 + 1 的答案係 <span class="text-orange-600 font-black">2</span>。`);
+                    replyParts.push(p.deepAnswer);
                 }
             }
 
